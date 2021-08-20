@@ -31,4 +31,10 @@ class SEnigmaSpec extends Specification {
   }
   section("enigma")
   section("scala")
+  "sortDictionaryForDecoding" should {
+    "move (234) to the front" in {
+      val dictionaryToSort = Map("23" -> 'N', "234" -> ' ', "89" -> 'H', "78" -> 'Q', "37" -> 'A').map(entry => (entry._1.toString, entry._2)).toSeq.sorted
+      SEnigma.sortDictionaryForDecoding(dictionaryToSort) must_== List("234" -> ' ', "23" -> 'N', "37" -> 'A', "78" -> 'Q', "89" -> 'H')
+    }
+  }
 }

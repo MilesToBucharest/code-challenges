@@ -1,4 +1,7 @@
-package com.intenthq.challenge;
+package com.intenthq.challenge
+
+import scala.annotation.tailrec
+;
 
 object SEnigma {
 
@@ -22,6 +25,40 @@ object SEnigma {
   // Following the above rules, the message would be: “1N73N7 HQ”
   // Check the tests for some other (simpler) examples.
 
-  def deciphe(map: Map[Int, Char])(message: List[Int]): String = ???
+  @tailrec
+  def decodeWithSingleKey(entry: (String, Char), message: String, decoded: String = ""): String = {
+    val keyLength = entry._1.length
+    if (message.length < keyLength) decoded + message
+    else {
+      val messageChunk = message.slice(0, keyLength)
+      if (messageChunk == entry._1) decodeWithSingleKey(entry, message.slice(keyLength, message.length), decoded + entry._2)
+      else decodeWithSingleKey(entry, message.tail, decoded + message.head)
+    }
+  }
 
+  @tailrec
+  def decodedCollectionBuilder(dictionary: List[(String, Char)], decodedListOfStrings: List[String]): List[String] = {
+    if (dictionary.isEmpty) decodedListOfStrings
+    else decodedCollectionBuilder(dictionary.tail, List(decodeWithSingleKey(dictionary.head, decodedListOfStrings.head)))
+  }
+
+  @tailrec
+  def sortDictionaryForDecoding(dictionary: Seq[(String, Char)], sortedDictionary: List[(String, Char)] = List[(String, Char)]()): List[(String, Char)] = {
+    val firstEntry = dictionary.head
+    if (dictionary.count(_ => true) < 2) (sortedDictionary ++ List(firstEntry))
+    else {
+      val secondEntry = dictionary.tail.head
+      if (secondEntry._1.contains(firstEntry._1) && secondEntry._1.length > firstEntry._1.length) {
+        sortDictionaryForDecoding(dictionary.filter(_ != secondEntry), sortedDictionary ++ List(secondEntry))
+      } else {
+        sortDictionaryForDecoding(dictionary.drop(1), sortedDictionary ++ List(firstEntry))
+      }
+    }
+  }
+
+  def deciphe(map: Map[Int, Char])(message: List[Int]): String = {
+    val trieHashToSeq: Seq[(String, Char)] = map.map(entry => (entry._1.toString, entry._2)).toSeq.sorted
+    val messageAsString: String = message.mkString
+    decodedCollectionBuilder(sortDictionaryForDecoding(trieHashToSeq), List(messageAsString)).mkString
+  }
 }
