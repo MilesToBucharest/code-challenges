@@ -1,5 +1,7 @@
 package com.intenthq.challenge
 
+import scala.annotation.tailrec
+
 object SNiceStrings {
 
 // From http://adventofcode.com/day/5
@@ -21,5 +23,28 @@ object SNiceStrings {
 //    dvszwmarrgswjxmb is naughty because it contains only one vowel.
 //    How many strings are nice?
 
-  def nice(xs: List[String]): Int = ???
+  @tailrec
+  def vowelHelper(subject: String, vowelsReq: Int = 3, accum: Int = 0): Boolean = {
+    val vowels: Array[Char] = Array('a', 'e', 'i', 'o', 'u')
+    if (vowelsReq == accum) true
+    else if (subject.length < vowelsReq - accum) false
+    else if (vowels.contains(subject.head)) vowelHelper(subject.tail, vowelsReq, accum + 1)
+    else vowelHelper(subject.tail, vowelsReq, accum)
+  }
+
+  @tailrec
+  def seqLetterHelper(subject: String, seqLetterReq: Int = 2): Boolean = {
+    if (subject.length < seqLetterReq) false
+    else if (subject.head == subject.tail.head) true
+    else seqLetterHelper(subject.tail)
+  }
+
+  def comboHelper(subject: String): Boolean = {
+    val bannedCombos: Array[String] = Array("ab", "cd", "pq", "xy")
+    !bannedCombos.exists(bc => subject.contains(bc))
+  }
+
+  def nice(xs: List[String]): Int = {
+    xs.count(x => vowelHelper(x) && seqLetterHelper(x) && comboHelper(x))
+  }
 }
